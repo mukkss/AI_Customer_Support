@@ -7,8 +7,7 @@ from langchain_text_splitters import (
     RecursiveCharacterTextSplitter,
 )
 import os
-from embedder import embed_text
-from db_writer import get_db_connection, ingest_writer as insert_chunk
+
 
 
 
@@ -74,25 +73,25 @@ def load_and_split_markdown(
     return all_chunks
 
 
-def embed_and_store(documents: List[Document], table_name: str):
-    conn = get_db_connection()
+# def embed_and_store(documents: List[Document], table_name: str):
+#     conn = get_db_connection()
 
-    for i, chunk in enumerate(documents):
-        try:
-            embedding = embed_text(chunk.page_content)
+#     for i, chunk in enumerate(documents):
+#         try:
+#             embedding = embed_text(chunk.page_content)
 
-            insert_chunk(
-                conn=conn,
-                table=table_name,
-                content=chunk.page_content,
-                embedding=embedding,
-                metadata=chunk.metadata
-            )
+#             insert_chunk(
+#                 conn=conn,
+#                 table=table_name,
+#                 content=chunk.page_content,
+#                 embedding=embedding,
+#                 metadata=chunk.metadata
+#             )
 
-            if i % 10 == 0:
-                print(f"[INFO] Inserted {i + 1} chunks into {table_name}")
+#             if i % 10 == 0:
+#                 print(f"[INFO] Inserted {i + 1} chunks into {table_name}")
 
-        except Exception as e:
-            print(f"[ERROR] Failed to insert chunk {i}: {e}")
+#         except Exception as e:
+#             print(f"[ERROR] Failed to insert chunk {i}: {e}")
 
-    conn.close()
+#     conn.close()
