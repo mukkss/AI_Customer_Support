@@ -8,7 +8,7 @@ from langchain_text_splitters import (
 )
 import os
 from embedder import embed_text
-from ingest_config import INGEST_CONFIG
+from db_writer import get_db_connection, ingest_writer as insert_chunk
 
 
 
@@ -74,23 +74,25 @@ def load_and_split_markdown(
     return all_chunks
 
 
-def embed_documents(documents: List[Document]):
-    for i, doc in enumerate(documents):
-        try:
-            embeddings = embed_text(doc.page_content)
-            
+def embed_and_store(documents: List[Document], table_name: str):
+    conn = get_db_connection()
 
-            if len(embeddings) != 768:
-                raise ValueError(f"Unexpected embedding size: {len(embeddings)}")
+    for i, chunk in enumerate(documents):
+        try:
+            embedding = embed_text(chunk.page_content)
+
+            insert_chunk(
+                conn=conn,
+                table=table_name,
+                content=chunk.page_content,
+                embedding=embedding,
+                metadata=chunk.metadata
+            )
 
             if i % 10 == 0:
-                print(f"[INFO] Embedded {i + 1} chunks")
-
-            return embeddings
+                print(f"[INFO] Inserted {i + 1} chunks into {table_name}")
 
         except Exception as e:
-            print(
-                f"[ERROR] Failed at chunk {i} "
-                f"from {doc.metadata.get('source_file')}: {e}"
-            )
-    
+            print(f"[ERROR] Failed to insert chunk {i}: {e}")
+
+    conn.close()
