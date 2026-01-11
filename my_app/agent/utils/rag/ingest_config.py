@@ -26,3 +26,18 @@ INGEST_CONFIG = {
         "overlap": 200
     }
 }
+
+RETRIEVAL_TABLES = {
+    "policy": {
+        "schema": "public",
+        "table": "policy_table",
+    },
+    "faq": {
+        "schema": "public",
+        "table": "faq_table",
+    },
+    "guide": {
+        "schema": "public",
+        "table": "guide_table",
+    },
+}
