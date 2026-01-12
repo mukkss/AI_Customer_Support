@@ -1,7 +1,7 @@
-from my_app.agent.utils.rag.preprocessor import load_and_split_markdown
-from my_app.agent.utils.rag.embedder import embed_text
-from my_app.agent.utils.rag.db_writer import get_db_connection, ingest_writer
-from my_app.agent.utils.rag.ingest_config import INGEST_CONFIG
+from my_app.agent.utils.knowledge.preprocessor import load_and_split_markdown
+from my_app.agent.utils.knowledge.embedder import embed_text
+from my_app.agent.utils.knowledge.db_writer import get_db_connection, ingest_writer
+from my_app.agent.utils.knowledge.ingest_config import INGEST_CONFIG
 
 
 

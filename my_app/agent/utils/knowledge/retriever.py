@@ -1,7 +1,7 @@
 from psycopg2 import sql
-from my_app.agent.utils.rag.ingest_config import RETRIEVAL_TABLES
-from my_app.agent.utils.rag.db_writer import get_db_connection
-from my_app.agent.utils.rag.embedder import embed_text
+from my_app.agent.utils.knowledge.ingest_config import RETRIEVAL_TABLES
+from my_app.agent.utils.knowledge.db_writer import get_db_connection
+from my_app.agent.utils.knowledge.embedder import embed_text
 
 def detect_intent(query: str) -> str:
     q = query.lower()
