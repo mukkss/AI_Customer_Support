@@ -13,7 +13,4 @@ class AgentState(TypedDict):
     clarification_needed : bool
     next_agent : Optional[str]
 
-    knowledge_result: Optional[dict]
-    customer_result: Optional[dict]
-    product_agent: Optional[dict]
-    general_agent: Optional[dict]
+    knowledge_result: Optional[Dict[str, List[Dict[str, str]]]]
