@@ -20,3 +20,5 @@ class AgentState(TypedDict):
  
     knowledge_result: Optional[Dict[str, Any]]
     catalog_result: Optional[Dict[str, Any]]
+    general_result: Optional[AnyMessage]
+    order_result: Optional[Dict[str, Any]]

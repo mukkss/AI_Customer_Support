@@ -27,9 +27,9 @@ def run_agent(user_input: str):
 
 if __name__ == "__main__":
     queries = [
-        "How should I store decal sheets safely?",
-        "Do you have 1/72 scale RAF decals?",
-        "List WWII tank decals from Germany",
+        "What glue is best for resin models?",
+        # "Do you have 1/72 scale RAF decals?",
+        # "List WWII tank decals from Germany",
     ]
 
     for q in queries:
