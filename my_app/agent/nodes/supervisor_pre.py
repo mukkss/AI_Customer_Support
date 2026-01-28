@@ -48,7 +48,7 @@ def supervisor_pre_node(state) -> dict:
         SUPERVISOR_PRE_PROMPT + "\nUser query:\n" + user_query
     )
 
-    # print("RAW SUPERVISOR OUTPUT:\n", response.content)
+    print("RAW SUPERVISOR OUTPUT:\n", response.content)
 
     try:
         data = json.loads(response.content)
