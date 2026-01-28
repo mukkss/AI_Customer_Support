@@ -6,7 +6,7 @@ def order_tool_node(state: OrderAgentState) -> dict:
     customer_id = state.get("customer_id")
 
 
-    # Supervisor should guarantee this, but double safety is fine
+
     if not customer_id:
         return {
             "order_result": {
