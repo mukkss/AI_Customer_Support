@@ -71,7 +71,7 @@ def supervisor_pre_node(state) -> dict:
     raw_filters = data.get("filters", {}) or {}
 
     # Clarification needed for low confidence or explicit request
-    if data.get("clarification_needed") or confidence < 0.6:
+    if data.get("clarification_needed") or confidence < 0.4:
         return {
             "safe": True,
             "block_reason": None,
@@ -125,14 +125,28 @@ def supervisor_pre_node(state) -> dict:
             "next_agent": "general_agent"
         }
 
-    if "CUSTOMER_QUERY" in intents:
+    if "ORDER_QUERY" in intents:
+        return {
+            "safe": True,
+            "block_reason": None,
+            "intents": intents,
+            "filters": {
+                "order": raw_filters
+            },
+            "clarification_needed": False,
+            "next_agent": "order_retrieval"
+        }
+    
+    if data.get("escalate_to_human"):
         return {
             "safe": True,
             "block_reason": None,
             "intents": intents,
             "filters": {},
             "clarification_needed": False,
-            "next_agent": "order_retrieval"
+            "escalate_to_human": True,
+            "escalation_reason": data.get("escalation_reason"),
+            "next_agent": "supervisor_post"
         }
 
     return {
