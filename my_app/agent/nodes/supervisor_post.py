@@ -62,6 +62,13 @@ def supervisor_post_node(state: AgentState) -> dict:
 
         answer = llm.invoke(prompt).content.strip()
         return {"messages": [AIMessage(content=answer)]}
+    
+    if state.get("general_result"):
+        return {
+            "messages": [
+                AIMessage(content=state["general_result"])
+            ]
+        }
 
     return {
         "messages": [

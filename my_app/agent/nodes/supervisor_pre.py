@@ -1,7 +1,7 @@
 import json
 from langgraph.graph import END
 from my_app.agent.utils.model import get_json_llm
-from my_app.agent.utils.prompts import SUPERVISOR_PROMPT
+from my_app.agent.utils.prompts import SUPERVISOR_PRE_PROMPT
 
 
 def hard_guardrail_check(text: str):
@@ -45,7 +45,7 @@ def supervisor_pre_node(state) -> dict:
 
     llm = get_json_llm()
     response = llm.invoke(
-        SUPERVISOR_PROMPT + "\nUser query:\n" + user_query
+        SUPERVISOR_PRE_PROMPT + "\nUser query:\n" + user_query
     )
 
     # print("RAW SUPERVISOR OUTPUT:\n", response.content)
@@ -70,7 +70,7 @@ def supervisor_pre_node(state) -> dict:
     intents = data.get("intents", [])
     raw_filters = data.get("filters", {}) or {}
 
-
+    # Clarification needed for low confidence or explicit request
     if data.get("clarification_needed") or confidence < 0.6:
         return {
             "safe": True,
@@ -78,9 +78,10 @@ def supervisor_pre_node(state) -> dict:
             "intents": intents,
             "filters": {},
             "clarification_needed": True,
-            "next_agent": END
+            "next_agent": "supervisor_post"
         }
-
+    
+    # Product search intent
     if "PRODUCT_SEARCH" in intents:
         return {
             "safe": True,
@@ -93,15 +94,15 @@ def supervisor_pre_node(state) -> dict:
             "next_agent": "catalog_retrieval"
         }
 
-    if any(i in intents for i in ("POLICY_LOOKUP", "GENERAL_GUIDE")):
+    if "POLICY_LOOKUP" in intents:
         knowledge_filters = raw_filters.copy()
 
-        # Default doc_type if missing
-        if "doc_type" not in knowledge_filters:
-            if "POLICY_LOOKUP" in intents:
-                knowledge_filters["doc_type"] = "policy"
-            elif "GENERAL_GUIDE" in intents:
-                knowledge_filters["doc_type"] = "guide"
+        # # Default doc_type if missing
+        # if "doc_type" not in knowledge_filters:
+        #     if "POLICY_LOOKUP" in intents:
+        #         knowledge_filters["doc_type"] = "policy"
+        #     elif "GENERAL_GUIDE" in intents:
+        #         knowledge_filters["doc_type"] = "guide"
 
         return {
             "safe": True,
@@ -112,6 +113,16 @@ def supervisor_pre_node(state) -> dict:
             },
             "clarification_needed": False,
             "next_agent": "knowledge_retrieval"
+        }
+    
+    if "GENERAL_GUIDE" in intents:
+        return {
+            "safe": True,
+            "block_reason": None,
+            "intents": intents,
+            "filters": {},
+            "clarification_needed": False,
+            "next_agent": "general_agent"
         }
 
     if "CUSTOMER_QUERY" in intents:
@@ -130,5 +141,5 @@ def supervisor_pre_node(state) -> dict:
         "intents": intents,
         "filters": {},
         "clarification_needed": True,
-        "next_agent": END
+        "next_agent": "supervisor_post"
     }
