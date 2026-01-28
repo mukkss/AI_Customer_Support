@@ -2,7 +2,6 @@ import json
 from langgraph.graph import END
 from my_app.agent.utils.model import get_json_llm
 from my_app.agent.utils.prompts import SUPERVISOR_PROMPT
-from langchain_core.messages import AIMessage
 
 
 def hard_guardrail_check(text: str):
@@ -60,36 +59,76 @@ def supervisor_pre_node(state) -> dict:
             "next_agent": END
         }
 
-    if not data["safe"]:
+    if not data.get("safe", False):
         return {
             "safe": False,
-            "block_reason": data["block_reason"],
+            "block_reason": data.get("block_reason"),
             "next_agent": END
         }
 
     confidence = data.get("confidence", 0.0)
-    filters = data.get("filters", {}) or {}
+    intents = data.get("intents", [])
+    raw_filters = data.get("filters", {}) or {}
 
-    if "doc_type" not in filters:
-        if "POLICY_LOOKUP" in data["intents"]:
-            filters["doc_type"] = "policy"
-        elif "GENERAL_GUIDE" in data["intents"]:
-            filters["doc_type"] = "guide"
 
-    if data["clarification_needed"] or confidence < 0.6:
-        next_agent = END
-    elif data["needs"]["customer"]:
-        next_agent = END
-    else:
-        next_agent = "knowledge_retrieval"
+    if data.get("clarification_needed") or confidence < 0.6:
+        return {
+            "safe": True,
+            "block_reason": None,
+            "intents": intents,
+            "filters": {},
+            "clarification_needed": True,
+            "next_agent": END
+        }
+
+    if "PRODUCT_SEARCH" in intents:
+        return {
+            "safe": True,
+            "block_reason": None,
+            "intents": intents,
+            "filters": {
+                "product": raw_filters  
+            },
+            "clarification_needed": False,
+            "next_agent": "catalog_retrieval"
+        }
+
+    if any(i in intents for i in ("POLICY_LOOKUP", "GENERAL_GUIDE")):
+        knowledge_filters = raw_filters.copy()
+
+        # Default doc_type if missing
+        if "doc_type" not in knowledge_filters:
+            if "POLICY_LOOKUP" in intents:
+                knowledge_filters["doc_type"] = "policy"
+            elif "GENERAL_GUIDE" in intents:
+                knowledge_filters["doc_type"] = "guide"
+
+        return {
+            "safe": True,
+            "block_reason": None,
+            "intents": intents,
+            "filters": {
+                "knowledge": knowledge_filters 
+            },
+            "clarification_needed": False,
+            "next_agent": "knowledge_retrieval"
+        }
+
+    if "CUSTOMER_QUERY" in intents:
+        return {
+            "safe": True,
+            "block_reason": None,
+            "intents": intents,
+            "filters": {},
+            "clarification_needed": False,
+            "next_agent": "order_retrieval"
+        }
 
     return {
         "safe": True,
         "block_reason": None,
-        "intents": data["intents"],
-        "filters": filters,
-        "clarification_needed": data["clarification_needed"],
-        "next_agent": next_agent
+        "intents": intents,
+        "filters": {},
+        "clarification_needed": True,
+        "next_agent": END
     }
-
-
