@@ -12,8 +12,12 @@ class AgentState(TypedDict):
     safe: bool
     block_reason: Optional[str]
     intents: List[str]
+    confidence: float
     clarification_needed: bool
     next_agent: Optional[str]
+    escalate_to_human: bool
+    escalation_reason: str | None
+    clarification_count: int
 
     filters: Dict[str, Dict[str, Any]]
  
