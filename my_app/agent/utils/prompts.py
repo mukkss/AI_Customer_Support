@@ -57,16 +57,17 @@ SUPERVISOR_PRE_PROMPT = """
   - PRODUCT_SEARCH        (products, availability, specifications)
   - POLICY_LOOKUP         (returns, shipping, warranty, rules)
   - GENERAL_GUIDE         (model-building tips, materials, beginner help)
-  - CUSTOMER_QUERY        (orders, delivery status, issues, accounts)
+  - ORDER_QUERY           (orders, delivery status, issues, accounts)
   - UNKNOWN               (unclear or incomplete requests)
+  - HUMAN_ESCALATION      (explicit request for human agent)
 
-  --------------------------------
+  --------------------------------  
   ROUTING RULES
   --------------------------------
-  - PRODUCT_SEARCH  → product retrieval
-  - POLICY_LOOKUP   → knowledge retrieval
-  - GENERAL_GUIDE   → general agent
-  - CUSTOMER_QUERY  → customer agent
+  - PRODUCT_SEARCH  → product_retrieval
+  - POLICY_LOOKUP   → knowledge_retrieval
+  - GENERAL_GUIDE   → general_agent
+  - ORDER_QUERY     → order_retrieval
   - UNKNOWN         → clarification required
   - HUMAN_ESCALATION → supervisor_post
 
@@ -77,7 +78,7 @@ SUPERVISOR_PRE_PROMPT = """
   - Refers to an object without naming it (e.g., “this”, “that”, “it”)
   - Asks about compatibility without specifying both items
   - Asks about availability without naming a product
-  - Mentions an order without providing an order ID
+  - Mentions a specific order without providing an order ID
   - Can reasonably be interpreted in more than one way
 
   In these cases:
@@ -141,12 +142,19 @@ SUPERVISOR_PRE_PROMPT = """
     - scale_denominator (72, 48, 35, etc.)
     - product_type (decal, kit, paint, etc.)
 
+  3) order filters (for customer orders and returns)
+    Examples:
+    - order_id (e.g., "O1001")
+    - order_status (placed, shipped, delivered, cancelled)
+    - has_return (true | false)
+
   Rules:
   - Place filters ONLY in the correct domain
-  - Use simple string or number values
+  - Use simple string, number, or boolean values
   - Do NOT normalize, map, or infer values
   - If unsure, omit the filter
-  - NEVER mix knowledge and product filters
+  - NEVER mix filters across domains
+
 
   --------------------------------
   OUTPUT RULES (CRITICAL)
@@ -171,7 +179,8 @@ SUPERVISOR_PRE_PROMPT = """
     "confidence": number,
     "filters": {
       "knowledge": { string: string },
-      "product": { string: string | number }
+      "product": { string: string | number },
+      "order": { string: string | number | boolean }
     },
     "clarification_needed": boolean,
     "escalate_to_human": boolean,

@@ -7,6 +7,7 @@ from typing import Optional, List, Dict, Any
 class AgentState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages()]
     user_query: str
+    customer_id: str
 
     # Supervisor decisions
     safe: bool
@@ -20,6 +21,7 @@ class AgentState(TypedDict):
     clarification_count: int
 
     filters: Dict[str, Dict[str, Any]]
+
  
  
     knowledge_result: Optional[Dict[str, Any]]
