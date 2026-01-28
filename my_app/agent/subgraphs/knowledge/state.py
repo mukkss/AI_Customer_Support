@@ -1,11 +1,9 @@
-from langchain_core.messages import AIMessage
-from typing_extensions import TypedDict, Annotated
-from langgraph.graph.message import add_messages
-from typing import Any, Optional, List, Dict
+from typing_extensions import TypedDict
+from typing import Any, Optional, Dict
 
 
 class KnowledgeState(TypedDict):
-    messages: Annotated[list[AIMessage], add_messages()]
     user_query: str
     filters: Dict[str, Dict[str, Any]]
     knowledge_result: Optional[Dict[str, Any]]
+    rag_success: bool
