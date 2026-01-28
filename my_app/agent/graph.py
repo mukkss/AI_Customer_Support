@@ -60,6 +60,5 @@ def build_graph():
     graph.add_edge("general_agent", "supervisor_post")
 
     graph.add_edge("supervisor_post", END)
-    # graph.add_edge("response_formatter", END)
 
     return graph.compile()
