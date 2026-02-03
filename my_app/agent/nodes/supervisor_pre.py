@@ -4,44 +4,44 @@ from my_app.agent.utils.model import get_json_llm
 from my_app.agent.utils.prompts import SUPERVISOR_PRE_PROMPT
 
 
-# def hard_guardrail_check(text: str):
-#     lowered = text.lower()
+def hard_guardrail_check(text: str):
+    lowered = text.lower()
 
-#     forbidden_terms = [
-#         "password", "api key", "credential",
-#         "internal data", "database dump",
-#         "hack", "bypass"
-#     ]
+    forbidden_terms = [
+        "password", "api key", "credential",
+        "internal data", "database dump",
+        "hack", "bypass"
+    ]
 
-#     sql_patterns = [
-#         "drop table",
-#         "select * from",
-#         "insert into",
-#         "delete from",
-#         "update set"
-#     ]
+    sql_patterns = [
+        "drop table",
+        "select * from",
+        "insert into",
+        "delete from",
+        "update set"
+    ]
 
-#     for term in forbidden_terms:
-#         if term in lowered:
-#             return False, f"Blocked term detected: {term}"
+    for term in forbidden_terms:
+        if term in lowered:
+            return False, f"Blocked term detected: {term}"
 
-#     for pattern in sql_patterns:
-#         if pattern in lowered:
-#             return False, "SQL-like request detected"
+    for pattern in sql_patterns:
+        if pattern in lowered:
+            return False, "SQL-like request detected"
 
-#     return True, None
+    return True, None
 
 
 def supervisor_pre_node(state) -> dict:
     user_query = state["user_query"]
 
-    # safe, reason = hard_guardrail_check(user_query)
-    # if not safe:
-    #     return {
-    #         "safe": False,
-    #         "block_reason": reason,
-    #         "next_agent": END
-    #     }
+    safe, reason = hard_guardrail_check(user_query)
+    if not safe:
+        return {
+            "safe": False,
+            "block_reason": reason,
+            "next_agent": END
+        }
 
     llm = get_json_llm()
     response = llm.invoke(

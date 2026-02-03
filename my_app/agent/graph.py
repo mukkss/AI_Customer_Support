@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph, END
 from my_app.agent.utils.state import AgentState
-from my_app.agent.nodes.guardrail_check import guardrails_input_node
+# from my_app.agent.nodes.guardrail_check import guardrails_input_node
 from my_app.agent.nodes.supervisor_pre import supervisor_pre_node
 from my_app.agent.subgraphs.knowledge.graph import build_knowledge_subgraph
 from my_app.agent.subgraphs.catalog.graph import build_catalog_subgraph
@@ -33,7 +33,7 @@ def build_graph():
     general_subgraph = build_general_subgraph()
     order_subgraph = build_order_subgraph()
 
-    graph.add_node("guardrail_check", guardrails_input_node)
+    # graph.add_node("guardrail_check", guardrails_input_node)        
     graph.add_node("supervisor_pre", supervisor_pre_node)
     graph.add_node("knowledge_retrieval", knowledge_subgraph)
     graph.add_node("catalog_retrieval", catalog_subgraph)
@@ -41,8 +41,10 @@ def build_graph():
     graph.add_node("general_agent", general_subgraph)
     graph.add_node("supervisor_post", supervisor_post_node)
 
-    graph.set_entry_point("guardrail_check")
-    graph.add_edge("guardrail_check", "supervisor_pre")
+    # graph.set_entry_point("guardrail_check")
+    # graph.add_edge("guardrail_check", "supervisor_pre")
+
+    graph.set_entry_point("supervisor_pre")
 
     graph.add_conditional_edges(
         "supervisor_pre",
