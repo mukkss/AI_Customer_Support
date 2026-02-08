@@ -7,6 +7,7 @@ from my_app.agent.subgraphs.catalog.graph import build_catalog_subgraph
 from my_app.agent.subgraphs.general.graph import build_general_subgraph
 from my_app.agent.subgraphs.orders.graph import build_order_subgraph
 from my_app.agent.nodes.supervisor_post import supervisor_post_node
+from my_app.agent.persistence import checkpointer
 
 
 VALID_ROUTES = {
@@ -65,4 +66,4 @@ def build_graph():
 
     graph.add_edge("supervisor_post", END)
 
-    return graph.compile()
+    return graph.compile(checkpointer=checkpointer)

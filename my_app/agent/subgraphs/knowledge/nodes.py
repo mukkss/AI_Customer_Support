@@ -11,5 +11,5 @@ def knowledge_tool_node(state: KnowledgeState) -> dict:
 
     return {
         "knowledge_result": result,
-        "rag_success": bool
+        "rag_success": bool(result and result.get("items"))
     }

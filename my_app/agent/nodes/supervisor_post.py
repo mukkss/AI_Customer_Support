@@ -7,7 +7,7 @@ def supervisor_post_node(state: AgentState) -> dict:
     llm = get_text_llm()
     
 
-    if state.get("escalate_to_human") is True:
+    if state.get("escalated") is True:
         reason = state.get("escalation_reason", "support_required")
 
         if reason == "user_requested_human":
@@ -19,7 +19,11 @@ def supervisor_post_node(state: AgentState) -> dict:
             )
 
         return {
-            "messages": [AIMessage(content=message)]
+            "messages": [AIMessage(content=message)],
+            "escalated": True,
+            "escalation_reason": reason,
+            "confidence": state.get("confidence"),
+            "last_agent_route": "supervisor_post"
         }
 
 
@@ -231,7 +235,8 @@ def supervisor_post_node(state: AgentState) -> dict:
     return {
         "messages": [
             AIMessage(
-                content="I’m not able to find the information for that request right now."
+                content="I’m not able to find the information for that request right now. Please Contact Customer Care"
             )
         ]
     }
+    

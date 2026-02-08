@@ -12,5 +12,5 @@ def catalog_tool_node(state: AgentState) -> dict:
 
     return {
         "catalog_result": result,
-        "ret_success": bool
+        "ret_success": bool(result and result.get("items"))
     }

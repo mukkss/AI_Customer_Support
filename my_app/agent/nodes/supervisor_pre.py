@@ -1,6 +1,6 @@
 import json
 from langgraph.graph import END
-from my_app.agent.utils.model import get_json_llm
+from my_app.agent.utils.model import get_json_llm, get_text_llm
 from my_app.agent.utils.prompts import SUPERVISOR_PRE_PROMPT
 
 
@@ -48,7 +48,7 @@ def supervisor_pre_node(state) -> dict:
         SUPERVISOR_PRE_PROMPT + "\nUser query:\n" + user_query
     )
 
-    print("RAW SUPERVISOR OUTPUT:\n", response.content)
+    # print("RAW SUPERVISOR OUTPUT:\n", response.content)
 
     try:
         data = json.loads(response.content)
@@ -137,14 +137,14 @@ def supervisor_pre_node(state) -> dict:
             "next_agent": "order_retrieval"
         }
     
-    if data.get("escalate_to_human"):
+    if data.get("escalated"):
         return {
             "safe": True,
             "block_reason": None,
             "intents": intents,
             "filters": {},
             "clarification_needed": False,
-            "escalate_to_human": True,
+            "escalated": True,
             "escalation_reason": data.get("escalation_reason"),
             "next_agent": "supervisor_post"
         }
