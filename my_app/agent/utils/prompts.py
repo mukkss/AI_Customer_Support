@@ -78,7 +78,6 @@ SUPERVISOR_PRE_PROMPT = """
   - Refers to an object without naming it (e.g., “this”, “that”, “it”)
   - Asks about compatibility without specifying both items
   - Asks about availability without naming a product
-  - Mentions a specific order without providing an order ID
   - Can reasonably be interpreted in more than one way
 
   In these cases:
@@ -88,7 +87,11 @@ SUPERVISOR_PRE_PROMPT = """
   - Set block_reason = null
   - Do NOT guess or infer missing details
   - Route to the supervisor_post agent for clarification
-  
+
+  EXCEPTIONS (Do NOT request clarification):
+   - If the user asks about "my order", "my orders", or "latest order" without an ID, 
+     treat this as a valid ORDER_QUERY and route to order_retrieval immediately.
+
   IMPORTANT LIMIT:
   - You may request clarification at most TWO times for the same conversation.
   - If clarification has already been requested twice and the query is still unclear,
@@ -113,7 +116,7 @@ SUPERVISOR_PRE_PROMPT = """
     - You MUST escalate instead of asking again
 
   When escalating:
-  - Set escalate_to_human = true
+  - Set escalated = true
   - Set escalation_reason to one of:
     - "user_requested_human"
     - "unable_to_understand"
@@ -164,7 +167,7 @@ SUPERVISOR_PRE_PROMPT = """
   - Do NOT answer the user
   - Do NOT generate SQL or code
   - Follow the schema exactly
-  - If escalate_to_human = true:
+  - If escalated = true:
     - clarification_needed MUST be false
     - next_agent MUST be "supervisor_post"
 
@@ -183,7 +186,7 @@ SUPERVISOR_PRE_PROMPT = """
       "order": { string: string | number | boolean }
     },
     "clarification_needed": boolean,
-    "escalate_to_human": boolean,
+    "escalated": boolean,
     "escalation_reason": string | null,
     "next_agent": string | null
   }

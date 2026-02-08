@@ -16,9 +16,10 @@ class AgentState(TypedDict):
     confidence: float
     clarification_needed: bool
     next_agent: Optional[str]
-    escalate_to_human: bool
+    escalated: bool
     escalation_reason: str | None
     clarification_count: int
+    last_agent_route: Optional[str]
 
     filters: Dict[str, Dict[str, Any]]
 

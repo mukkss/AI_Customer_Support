@@ -1,24 +1,30 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List
-import uuid
+import asyncio
 
 from my_app.agent.router import run_agent
 
 router = APIRouter(prefix="/agent", tags=["agent"])
 
+
 class AgentRequest(BaseModel):
     user_query: str
-    thread_id: str | None = None
+    customer_id: str
+
 
 @router.post("/run")
-def run_agent_endpoint(request: AgentRequest):
+async def run_agent_endpoint(request: AgentRequest):
     try:
-        thread_id = request.thread_id or str(uuid.uuid4())
-        response = run_agent(request.user_query, thread_id = thread_id)
+        result = await asyncio.to_thread(
+            run_agent,
+            request.user_query,
+            request.customer_id,
+        )
 
-        return {
-            "answer": response
-        }
+        return result
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail="Agent execution failed"
+        )
