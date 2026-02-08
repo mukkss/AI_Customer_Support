@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const AdminDashboard = () => {
-    const [activeTab, setActiveTab] = useState('orders'); // 'orders' or 'products'
+    const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'products', 'escalations'
     const [orders, setOrders] = useState([]);
     const [products, setProducts] = useState([]);
+    const [escalations, setEscalations] = useState([]);
     const [loading, setLoading] = useState(false);
 
     // Form state for new product (Catalog Schema)
@@ -16,6 +17,28 @@ const AdminDashboard = () => {
         category_name: '',
         box_content: ''
     });
+
+    const fetchEscalations = () => {
+        setLoading(true);
+        axios.get('http://localhost:5000/api/escalations')
+            .then(res => {
+                setEscalations(res.data);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setLoading(false);
+            });
+    };
+
+    const updateEscalationStatus = (id, newStatus) => {
+        axios.patch(`http://localhost:5000/api/escalations/${id}/status`, { status: newStatus })
+            .then(res => {
+                // Optimistic update or refetch
+                fetchEscalations();
+            })
+            .catch(err => console.error(err));
+    };
 
     const fetchOrders = () => {
         setLoading(true);
@@ -45,7 +68,8 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         if (activeTab === 'orders') fetchOrders();
-        else fetchProducts();
+        else if (activeTab === 'products') fetchProducts();
+        else if (activeTab === 'escalations') fetchEscalations();
     }, [activeTab]);
 
     const handleAddProduct = (e) => {
@@ -94,10 +118,20 @@ const AdminDashboard = () => {
                     >
                         Products
                     </button>
+                    <button
+                        onClick={() => setActiveTab('escalations')}
+                        style={{
+                            background: activeTab === 'escalations' ? 'var(--accent-primary)' : 'transparent',
+                            color: activeTab === 'escalations' ? 'white' : 'var(--text-secondary)',
+                            border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', marginLeft: '0.5rem'
+                        }}
+                    >
+                        Escalations
+                    </button>
                 </div>
             </div>
 
-            {activeTab === 'orders' ? (
+            {activeTab === 'orders' && (
                 <div className="glass-panel" style={{ padding: '2rem', overflowX: 'auto' }}>
                     <h3>All User Orders</h3>
                     <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
@@ -123,7 +157,9 @@ const AdminDashboard = () => {
                         </tbody>
                     </table>
                 </div>
-            ) : (
+            )}
+
+            {activeTab === 'products' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                     <div className="glass-panel" style={{ padding: '2rem' }}>
                         <h3>Add New Product</h3>
@@ -134,6 +170,7 @@ const AdminDashboard = () => {
                                 onChange={e => setNewProduct({ ...newProduct, title: e.target.value })}
                                 required
                             />
+                            {/* ... (Other Inputs Same) */}
                             <input
                                 placeholder="Product Type"
                                 value={newProduct.product_type}
@@ -174,6 +211,63 @@ const AdminDashboard = () => {
                             </div>
                         ))}
                     </div>
+                </div>
+            )}
+
+            {activeTab === 'escalations' && (
+                <div className="glass-panel" style={{ padding: '2rem' }}>
+                    <h3>Support Escalations</h3>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+                        <thead>
+                            <tr style={{ color: 'var(--text-secondary)', textAlign: 'left', borderBottom: '1px solid var(--glass-border)' }}>
+                                <th style={{ padding: '1rem' }}>Customer</th>
+                                <th style={{ padding: '1rem' }}>Message</th>
+                                <th style={{ padding: '1rem' }}>Status</th>
+                                <th style={{ padding: '1rem' }}>Resolved At</th>
+                                <th style={{ padding: '1rem' }}>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {escalations.length === 0 ? (
+                                <tr><td colSpan="5" style={{ padding: '2rem', textAlign: 'center' }}>No escalations found.</td></tr>
+                            ) : escalations.map(esc => (
+                                <tr key={esc.escalation_id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                                    <td style={{ padding: '1rem' }}>
+                                        <div style={{ fontWeight: 'bold' }}>{esc.customer_name}</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{esc.customer_email}</div>
+                                    </td>
+                                    <td style={{ padding: '1rem', maxWidth: '300px' }}>
+                                        <div style={{ marginBottom: '0.5rem' }}>{esc.trigger_message}</div>
+                                        {esc.escalation_reason && <div style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', fontStyle: 'italic' }}>Reason: {esc.escalation_reason}</div>}
+                                    </td>
+                                    <td style={{ padding: '1rem' }}>
+                                        <span style={{
+                                            padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold',
+                                            background: esc.status === 'open' ? 'var(--danger)' : esc.status === 'resolved' ? 'var(--success)' : 'var(--bg-secondary)',
+                                            color: 'white'
+                                        }}>
+                                            {esc.status.toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '1rem' }}>
+                                        {esc.resolved_at ? new Date(esc.resolved_at).toLocaleString() : '-'}
+                                    </td>
+                                    <td style={{ padding: '1rem' }}>
+                                        <select
+                                            value={esc.status}
+                                            onChange={(e) => updateEscalationStatus(esc.escalation_id, e.target.value)}
+                                            style={{ padding: '0.5rem' }}
+                                        >
+                                            <option value="open">Open</option>
+                                            <option value="in_progress">In Progress</option>
+                                            <option value="resolved">Resolved</option>
+                                            <option value="closed">Closed</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             )}
         </div>

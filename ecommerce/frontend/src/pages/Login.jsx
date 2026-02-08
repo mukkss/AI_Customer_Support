@@ -11,8 +11,6 @@ export default function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            // Assuming backend is running on port 5000 via proxy or direct
-            // We will need to set up proxy in vite config or use full URL
             const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
             if (response.data.success) {
                 localStorage.setItem('user', JSON.stringify(response.data.user));

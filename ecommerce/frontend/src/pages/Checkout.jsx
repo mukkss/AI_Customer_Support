@@ -34,7 +34,8 @@ const Checkout = () => {
                 userId: user.id,
                 items: cart.map(item => ({ productId: item.id, quantity: item.quantity, price: item.price })),
                 total: cartTotal,
-                addressId: 'addr_1' // For MVP simplification, using fixed ID or we'd create new address
+                addressId: null, // Clear placeholder
+                newAddress: formData // Send actual form data
             };
 
             const res = await axios.post('http://localhost:5000/api/orders', orderData);

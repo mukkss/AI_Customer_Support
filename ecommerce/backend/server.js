@@ -28,9 +28,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/chat', require('./routes/chat'));
+app.use('/api/escalations', require('./routes/escalations'));
 
 app.get('/', (req, res) => {
-    res.send('SkyScale E-commerce API is running');
+    res.send('SkySkale E-commerce API is running');
 });
 
 app.listen(PORT, () => {

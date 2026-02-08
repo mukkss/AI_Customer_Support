@@ -27,7 +27,7 @@ const Navbar = () => {
         <nav style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--glass-border)', padding: '1rem 0', position: 'sticky', top: 0, zIndex: 100 }}>
             <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2rem' }}>
                 <Link to={user ? "/products" : "/"} style={{ fontSize: '1.5rem', fontWeight: 'bold', background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                    SkyScale
+                    SkySkale
                 </Link>
                 <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
                     {user ? (

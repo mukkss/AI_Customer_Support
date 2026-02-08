@@ -20,9 +20,10 @@ const Home = () => {
             textAlign: 'center',
             color: 'var(--text-primary)'
         }}>
-            <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>Welcome to SkyScale</h1>
+            <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>Welcome to SkySkale</h1>
             <p style={{ fontSize: '1.2rem', marginBottom: '2rem', maxWidth: '600px', color: 'var(--text-secondary)' }}>
-                Your premium destination for AI-powered solutions. Experience the future of shopping with our intelligent platform.
+                SkySkale creates meticulously detailed scale models from aircraft to military vehicles crafted with precision 
+                and a focus on authenticity for modelers who value accuracy and quality.
             </p>
             <div style={{ display: 'flex', gap: '1rem' }}>
                 <Link to="/login" className="btn-primary" style={{ textDecoration: 'none' }}>

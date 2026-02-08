@@ -84,3 +84,37 @@ Once authenticated, the user enters the main application area:
 3.  `authMiddleware` verifies cookie & extracts `customer_id`.
 4.  `chat.js` processes message (contextualized to that specific user).
 5.  Response is sent back and displayed.
+
+## 5. Recent Implementation Updates (Escalation Management)
+
+### A. Backend Changes
+1.  **Dependencies**: Added `cookie-parser` and `axios`.
+2.  **Authentication**:
+    *   **JWT**: Now issued on login and stored in HTTP-Only cookies.
+    *   **Middleware**: `verifyToken` (in `authMiddleware.js`) protects routes.
+    *   **CORS**: Configured to allow credentials from frontend.
+3.  **Chat Route (`/api/chat`)**:
+    *   Calls Python Agent API (`http://localhost:8000/agent/run`).
+    *   Sends `customer_id` and `user_query`.
+    *   **Escalation Handling**: Checks agent response for `escalated: true`.
+    *   **DB Insertion**: Inserts escalation records into `support.escalations` table.
+4.  **Escalations Route (`/api/escalations`)**:
+    *   `GET /`: Fetches all escalations.
+    *   `PATCH /:id/status`: Updates status (open, resolved, closed) and `resolved_at` timestamp.
+
+### B. Frontend Changes
+1.  **Global Config**: `axios.defaults.withCredentials = true` in `main.jsx`.
+2.  **Chat Widget**: Updated to call port `5000` (Backend) instead of `8000`.
+3.  **Admin Dashboard**:
+    *   Added "Escalations" tab.
+    *   Displays escalation table (Customer, Message, Status, Reason).
+    *   Allows status updates via dropdown.
+    *   Restored missing functions (`fetchOrders`, `fetchProducts`, `handleAddProduct`).
+
+### C. Agent (Python) Changes
+1.  **State Management (`state.py`)**:
+    *   Renamed `escalate_to_human` to `escalated`.
+    *   Added `last_agent_route`.
+2.  **Router (`router.py` & `agent_api.py`)**:
+    *   Updated to return full dictionary including `escalated` status, not just text answer.
+    *   Ensures escalation metadata is passed to the Node.js backend.

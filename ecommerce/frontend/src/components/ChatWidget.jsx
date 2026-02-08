@@ -34,7 +34,7 @@ const ChatWidget = () => {
             // Replace with your actual API endpoint
             const response = await axios.post('http://localhost:5000/api/chat', {
                 message: input
-            });
+            }, { withCredentials: true });
 
             const botResponse = {
                 id: Date.now() + 1,
