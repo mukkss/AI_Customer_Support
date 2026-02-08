@@ -91,5 +91,5 @@ def general_final_node(state: GeneralAgentState) -> dict:
 
     return {
         "general_result": answer,
-        "web_search_success": True
+        "web_search_success": bool(answer and len(answer) > 0)
     }
