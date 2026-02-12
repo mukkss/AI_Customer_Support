@@ -10,7 +10,7 @@ def hard_guardrail_check(text: str):
     forbidden_terms = [
         "password", "api key", "credential",
         "internal data", "database dump",
-        "hack", "bypass"
+        "hack", "bypass", "admin", "root", "system prompt"
     ]
 
     sql_patterns = [
@@ -50,10 +50,20 @@ def supervisor_pre_node(state) -> dict:
 
     # print("RAW SUPERVISOR OUTPUT:\n", response.content)
 
+    base_response = {
+        "knowledge_result": None,
+        "catalog_result": None,
+        "general_result": None,
+        "order_result": None,
+        "escalated": False,
+        "escalation_reason": None
+    }
+
     try:
         data = json.loads(response.content)
     except Exception:
         return {
+            **base_response,
             "safe": False,
             "block_reason": "Supervisor JSON parsing failure",
             "next_agent": END
@@ -61,6 +71,7 @@ def supervisor_pre_node(state) -> dict:
 
     if not data.get("safe", False):
         return {
+            **base_response,
             "safe": False,
             "block_reason": data.get("block_reason"),
             "next_agent": END
@@ -73,6 +84,7 @@ def supervisor_pre_node(state) -> dict:
     # Clarification needed for low confidence or explicit request
     if data.get("clarification_needed") or confidence < 0.4:
         return {
+            **base_response,
             "safe": True,
             "block_reason": None,
             "intents": intents,
@@ -84,6 +96,7 @@ def supervisor_pre_node(state) -> dict:
     # Product search intent
     if "PRODUCT_SEARCH" in intents:
         return {
+            **base_response,
             "safe": True,
             "block_reason": None,
             "intents": intents,
@@ -95,16 +108,10 @@ def supervisor_pre_node(state) -> dict:
         }
 
     if "POLICY_LOOKUP" in intents:
-        knowledge_filters = raw_filters.copy()
-
-        # # Default doc_type if missing
-        # if "doc_type" not in knowledge_filters:
-        #     if "POLICY_LOOKUP" in intents:
-        #         knowledge_filters["doc_type"] = "policy"
-        #     elif "GENERAL_GUIDE" in intents:
-        #         knowledge_filters["doc_type"] = "guide"
+        knowledge_filters = None
 
         return {
+            **base_response,
             "safe": True,
             "block_reason": None,
             "intents": intents,
@@ -117,6 +124,7 @@ def supervisor_pre_node(state) -> dict:
     
     if "GENERAL_GUIDE" in intents:
         return {
+            **base_response,
             "safe": True,
             "block_reason": None,
             "intents": intents,
@@ -127,6 +135,7 @@ def supervisor_pre_node(state) -> dict:
 
     if "ORDER_QUERY" in intents:
         return {
+            **base_response,
             "safe": True,
             "block_reason": None,
             "intents": intents,
@@ -139,6 +148,7 @@ def supervisor_pre_node(state) -> dict:
     
     if data.get("escalated"):
         return {
+            **base_response,
             "safe": True,
             "block_reason": None,
             "intents": intents,
@@ -150,6 +160,7 @@ def supervisor_pre_node(state) -> dict:
         }
 
     return {
+        **base_response,
         "safe": True,
         "block_reason": None,
         "intents": intents,

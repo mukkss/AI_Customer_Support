@@ -118,8 +118,8 @@ def retrieve_orders(conn, customer_id: str, raw_filters: dict | None):
             ),
         }
 
-        if "order_id" in filters:
-            order_data["items"] = fetch_order_items(conn, order_id)
+        # Always fetch items for context
+        order_data["items"] = fetch_order_items(conn, order_id)
 
         items.append(order_data)
 

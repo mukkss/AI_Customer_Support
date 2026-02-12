@@ -11,11 +11,11 @@ def supervisor_post_node(state: AgentState) -> dict:
         reason = state.get("escalation_reason", "support_required")
 
         if reason == "user_requested_human":
-            message = "I’ll connect you with a human support agent to help you further."
+            message = "I’ll connect you with a Customer support to help you further."
         else:
             message = (
                 "I’m not fully confident I understood your request, "
-                "so I’m passing this to a human support agent."
+                "so I’m passing this to a Customer support."
             )
 
         return {
@@ -26,22 +26,26 @@ def supervisor_post_node(state: AgentState) -> dict:
             "last_agent_route": "supervisor_post"
         }
 
-
-
     if state.get("clarification_needed") == True:
         context = state["user_query"]
         prompt = f"""
-            You are a customer support assistant.
+            You are a precise and polite customer support assistant.
 
-            The user's question is unclear. 
-            Politely ask for clarification in ONE short sentence.
-            Do NOT ask multiple questions.
-            Do NOT suggest answers.
+            The user's question is unclear or incomplete, and you must ask for clarification.
+
+            Rules:
+            - Ask for clarification in EXACTLY ONE short, clear sentence.
+            - Ask ONLY ONE question.
+            - Be polite and professional.
+            - Do NOT guess the user's intent.
+            - Do NOT provide answers, suggestions, or explanations.
+            - Do NOT mention policies, context, or why clarification is needed.
+            - If possible, reference the user's original question naturally.
 
             User question:
             {context}
 
-            Clarification request:
+            One-sentence clarification question:
         """
         answer = llm.invoke(prompt).content.strip()
 
@@ -56,24 +60,35 @@ def supervisor_post_node(state: AgentState) -> dict:
     if state.get("knowledge_result") and state["knowledge_result"].get("items"):
         items = state["knowledge_result"]["items"]
 
+        context_parts = []
+        for item in items[:2]:
+            content = item.get("content", "").strip()
+            if content:
+                context_parts.append(content)
+
         context = "\n\n".join(
-            item["content"] for item in items[:2]
+            context_parts
         )
 
-        prompt = f"""
-            You are a customer support assistant.
+        user_query = state.get("user_query", "").strip()
 
-            Answer the user's question in ONE short, clear sentence.
-            Do not add extra details.
-            Do not mention policies, documents, or sections explicitly.
+        prompt = f"""
+            You are a precise and reliable customer support assistant.
+
+            Your task:
+            - Answer the user's question using ONLY the reference information provided.
+            - Respond in EXACTLY TWO short, clear, and complete sentence.
+            - Do NOT add explanations, assumptions, or extra details.
+            - Do NOT mention documents, policies, sources, or "reference information".
+            - If the answer cannot be determined from the reference, say: "I'm sorry, I don't have enough information to answer that."
 
             User question:
-            {state["user_query"]}
+            {user_query}
 
             Reference information:
             {context}
 
-            One-sentence answer:
+            Final two-sentence answer:
         """
 
         answer = llm.invoke(prompt).content.strip()
@@ -126,24 +141,22 @@ def supervisor_post_node(state: AgentState) -> dict:
 
             prompt = f"""
                 You are a customer support assistant.
+                
+                1. Provide a one-sentence summary.
+                2. List the items in the order (Product Name, Quantity, Price).
 
-                The user asked about the ITEMS in their order.
-                Answer the user's question in ONE short, clear sentence.
-                Mention the number of items.
-                Do NOT talk about order status unless asked.
-                User question:
-                    {state["user_query"]}
-
+                Rules:
+                    - Do NOT use prefixes like "Summary:" at the start.
+                    - Write naturally.  
+                User question: {state["user_query"]}
                 Order ID: {order_id}
-                Number of items: {item_count}
-
-                One-sentence answer:
+                Items data: {order["items"]}
             """
 
             answer = llm.invoke(prompt).content.strip()
             return {"messages": [AIMessage(content=answer)]}
 
-        # Case 2️3: Specific order WITHOUT items → status-focused
+        # Case 3: Specific order WITHOUT items → status-focused
         if len(orders) == 1:
             order = orders[0]
 
@@ -157,7 +170,10 @@ def supervisor_post_node(state: AgentState) -> dict:
                 The user asked about the STATUS of their order.
                 Answer the user's question in ONE short, clear sentence.
                 State the order status explicitly.
-                Mention expected delivery ONLY if available.
+                ALWAYS state the expected delivery date if it exists in the data.
+                Rules:
+            - Do NOT use prefixes like "Summary:" at the start.
+            - Write naturally.
 
                 User question:
                     {state["user_query"]}
@@ -176,24 +192,23 @@ def supervisor_post_node(state: AgentState) -> dict:
 
         prompt = f"""
             You are a customer support assistant.
-
-            Answer the user's question in ONE short, clear sentence.
-            State how many orders were found.
-            Do NOT list order IDs.
-            Do NOT add extra details.
-            User question:
-                    {state["user_query"]}
-
+            
+            1. Provide a one-sentence summary.
+            2. List the orders with their ID, Status, Date, Total Amount, 
+                AND Expected Delivery Date (if available).
+            
+            Rules:
+            - Do NOT use prefixes like "Summary:" at the start.
+            - Write naturally.
+            
+            User question: {state["user_query"]}
             Number of orders: {order_count}
-
-            One-sentence answer:
+            Orders data: {orders}
         """
 
         answer = llm.invoke(prompt).content.strip()
         return {"messages": [AIMessage(content=answer)]}
 
-
-    
     if state.get("catalog_result") and state["catalog_result"].get("items"):
         items = state["catalog_result"]["items"]
 

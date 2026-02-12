@@ -55,8 +55,8 @@ SUPERVISOR_PRE_PROMPT = """
   --------------------------------
   Allowed intents (choose all that apply):
   - PRODUCT_SEARCH        (products, availability, specifications)
-  - POLICY_LOOKUP         (returns, shipping, warranty, rules)
-  - GENERAL_GUIDE         (model-building tips, materials, beginner help)
+  - POLICY_LOOKUP         (store policies, accounts, payments, custom orders, returns, shipping)
+  - GENERAL_GUIDE         (model-building HOBBY tips, painting techniques, assembly advice)
   - ORDER_QUERY           (orders, delivery status, issues, accounts)
   - UNKNOWN               (unclear or incomplete requests)
   - HUMAN_ESCALATION      (explicit request for human agent)
@@ -89,8 +89,9 @@ SUPERVISOR_PRE_PROMPT = """
   - Route to the supervisor_post agent for clarification
 
   EXCEPTIONS (Do NOT request clarification):
-   - If the user asks about "my order", "my orders", or "latest order" without an ID, 
-     treat this as a valid ORDER_QUERY and route to order_retrieval immediately.
+   - If the user asks about "my order", "my orders", "latest order", or "details about it/them" 
+     (implying a follow-up), treat this as a valid ORDER_QUERY and route to order_retrieval.
+   - Do NOT ask for "which account" or "which platform". Assume the user is logged in to SkySkale.
 
   IMPORTANT LIMIT:
   - You may request clarification at most TWO times for the same conversation.
