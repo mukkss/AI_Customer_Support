@@ -46,7 +46,7 @@ const ChatWidget = () => {
         } catch (error) {
             const errorResponse = {
                 id: Date.now() + 1,
-                text: "Sorry, I'm having trouble connecting right now.",
+                text: "Sorry, I'm having trouble connecting right now. Please Contact Customer Support",
                 sender: "bot",
                 isError: true
             };
